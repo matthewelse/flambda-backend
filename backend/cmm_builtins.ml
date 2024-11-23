@@ -770,7 +770,7 @@ let extcall ~dbg ~returns ~alloc ~is_c_builtin ~effects ~coeffects ~ty_args name
             alloc;
             ty_args;
             returns;
-            builtin = is_c_builtin;
+            builtin = (* If the builtin isn't available, try the C stub. *) false;
             effects;
             coeffects
           },
