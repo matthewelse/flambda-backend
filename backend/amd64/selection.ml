@@ -213,7 +213,7 @@ class selector =
         | "caml_memory_fence" -> Ispecific Imfence, args
         | _ -> (
           match Simd_selection.select_operation func args with
-          | Some (op, args) -> op, args
+          | Some (op, args) -> Ispecific (Isimd op), args
           | None -> super#select_operation op args dbg))
       (* Recognize store instructions *)
       | Cstore (((Word_int | Word_val) as chunk), _init) -> (

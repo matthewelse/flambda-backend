@@ -12,10 +12,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-[@@@ocaml.warning "+a-40-42"]
+open Simd
+open Format
 
 (* SIMD instruction selection for ARM64 *)
 
-let select_operation _ = None
+let select_operation op args =
+  (* CR melse: caml_neon_int8x16_add *)
+  match op with "caml_sse2_int8x16_add" -> Some (Add_i8, args) | _ -> None
 
 let pseudoregs_for_operation _ arg res = arg, res

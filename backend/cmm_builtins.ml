@@ -770,7 +770,10 @@ let extcall ~dbg ~returns ~alloc ~is_c_builtin ~effects ~coeffects ~ty_args name
             alloc;
             ty_args;
             returns;
-            builtin = (* If the builtin isn't available, try the C stub. *) false;
+            (* CR melse: This stops us from falling back to C stubs, but if I
+               change this to false, we don't try to us builtins later on e.g.
+               simd *)
+            builtin = is_c_builtin;
             effects;
             coeffects
           },

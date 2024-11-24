@@ -592,6 +592,7 @@ module BR = Branch_relaxation.Make (struct
     | Lop (Ispecific (Ibswap { bitwidth = (Thirtytwo | Sixtyfour) })) -> 1
     | Lop (Ispecific Imove32) -> 1
     | Lop (Ispecific (Isignext _)) -> 1
+    | Lop (Ispecific (Isimd Add_i8)) -> 1
     | Lop (Iname_for_debugger _) -> 0
     | Lop (Iprobe _ | Iprobe_is_enabled _) ->
       fatal_error ("Probes not supported.")
@@ -784,6 +785,12 @@ let move src dst =
     | _ ->
       assert false
   end
+
+let emit_simd_instr (op : Simd.operation) i =
+  match op with
+  | Add_i8 ->
+    `  add {emit_vreg i.res.(0)}.16b, {emit_vreg i.arg.(0)}.16b, {emit_vreg i.arg.(1)}.16b\n`
+
 (* Output the assembly code for an instruction *)
 
 let emit_instr i =
@@ -1256,6 +1263,8 @@ let emit_instr i =
         sc_return = ret;
         sc_max_frame_size_in_bytes = max_frame_size_bytes;
       }
+    | Lop(Ispecific (Isimd op)) ->
+      emit_simd_instr op i
 
 (* Emission of an instruction sequence *)
 
