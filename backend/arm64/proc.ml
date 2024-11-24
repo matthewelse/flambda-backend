@@ -60,31 +60,31 @@ let float_reg_name =
      "d16"; "d17"; "d18"; "d19"; "d20"; "d21"; "d22"; "d23";
      "d24"; "d25"; "d26"; "d27"; "d28"; "d29"; "d30"; "d31" |]
 
+let float32_reg_name =
+  [| "s0";  "s1";  "s2";  "s3";  "s4";  "s5";  "s6";  "s7";
+     "s8";  "s9";  "s10"; "s11"; "s12"; "s13"; "s14"; "s15";
+     "s16"; "s17"; "s18"; "s19"; "s20"; "s21"; "s22"; "s23";
+     "s24"; "s25"; "s26"; "s27"; "s28"; "s29"; "s30"; "s31" |]
+
 let num_register_classes = 2
 
 let register_class r =
   match (r.typ : machtype_component) with
   | Val | Int | Addr  -> 0
-  | Float -> 1
+  | Float | Float32 -> 1
   | Vec128 ->
     (* CR mslater: (SIMD) arm64 *)
     fatal_error "arm64: got vec128 register"
-  | Float32 ->
-    (* CR mslater: (float32) arm64 *)
-    fatal_error "arm64: got float32 register"
 
 let num_stack_slot_classes = 2
 
 let stack_slot_class typ =
   match (typ : machtype_component) with
   | Val | Int | Addr  -> 0
-  | Float -> 1
+  | Float | Float32 -> 1
   | Vec128 ->
     (* CR mslater: (SIMD) arm64 *)
     fatal_error "arm64: got vec128 register"
-  | Float32 ->
-    (* CR mslater: (float32) arm64 *)
-    fatal_error "arm64: got float32 register"
 
 let stack_class_tag c =
   match c with
@@ -104,12 +104,11 @@ let register_name ty r =
     int_reg_name.(r - first_available_register.(0))
   | Float ->
     float_reg_name.(r - first_available_register.(1))
+  | Float32 ->
+    float32_reg_name.(r - first_available_register.(1))
   | Vec128 ->
     (* CR mslater: (SIMD) arm64 *)
     fatal_error "arm64: got vec128 register"
-  | Float32 ->
-    (* CR mslater: (float32) arm64 *)
-    fatal_error "arm64: got float32 register"
 
 let rotate_registers = true
 
@@ -122,15 +121,18 @@ let hard_int_reg =
   done;
   v
 
-let hard_float_reg =
+let hard_float_reg_gen kind =
   let v = Array.make 32 Reg.dummy in
   for i = 0 to 31 do
-    v.(i) <- Reg.at_location Float (Reg(100 + i))
+    v.(i) <- Reg.at_location kind (Reg(100 + i))
   done;
   v
 
+let hard_float_reg = hard_float_reg_gen Float
+let hard_float32_reg = hard_float_reg_gen Float32
+
 let all_phys_regs =
-  Array.append hard_int_reg hard_float_reg
+  Array.concat [hard_int_reg; hard_float_reg; hard_float32_reg]
 
 let precolored_regs =
   let phys_regs = Reg.set_of_array all_phys_regs in
@@ -140,12 +142,10 @@ let phys_reg ty n =
   match (ty : machtype_component) with
   | Int | Addr | Val -> hard_int_reg.(n)
   | Float -> hard_float_reg.(n - 100)
+  | Float32 -> hard_float32_reg.(n - 100)
   | Vec128 ->
     (* CR mslater: (SIMD) arm64 *)
     fatal_error "arm64: got vec128 register"
-  | Float32 ->
-    (* CR mslater: (float32) arm64 *)
-    fatal_error "arm64: got float32 register"
 
 let reg_x8 = phys_reg Int 8
 let reg_d7 = phys_reg Float 107
@@ -167,15 +167,18 @@ let loc_int last_int make_stack int ofs =
     ofs := !ofs + size_int; l
   end
 
-let loc_float last_float make_stack float ofs =
+let loc_float_gen kind last_float make_stack float ofs =
   if !float <= last_float then begin
-    let l = phys_reg Float !float in
+    let l = phys_reg kind !float in
     incr float; l
   end else begin
     ofs := Misc.align !ofs size_float;
-    let l = stack_slot (make_stack !ofs) Float in
+    let l = stack_slot (make_stack !ofs) kind in
     ofs := !ofs + size_float; l
   end
+
+let loc_float = loc_float_gen Float
+let loc_float32 = loc_float_gen Float32
 
 let loc_int32 last_int make_stack int ofs =
   if !int <= last_int then begin
@@ -203,8 +206,7 @@ let calling_conventions
         (* CR mslater: (SIMD) arm64 *)
         fatal_error "arm64: got vec128 register"
     | Float32 ->
-        (* CR mslater: (float32) arm64 *)
-        fatal_error "arm64: got float32 register"
+        loc.(i) <- loc_float32 last_float make_stack float ofs
   done;
   (loc, Misc.align (max 0 !ofs) 16)  (* keep stack 16-aligned *)
 
@@ -271,8 +273,7 @@ let external_calling_conventions
         (* CR mslater: (SIMD) arm64 *)
         fatal_error "arm64: got vec128 register"
     | XFloat32 ->
-        (* CR mslater: (float32) arm64 *)
-        fatal_error "arm64: got float32 register"
+        loc.(i) <- [| loc_float32 last_float make_stack float ofs |]
     end)
     ty_args;
   (loc, Misc.align !ofs 16)  (* keep stack 16-aligned *)

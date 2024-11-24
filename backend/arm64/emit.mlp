@@ -489,9 +489,7 @@ module BR = Branch_relaxation.Make (struct
     | Lop (Imove | Ispill | Ireload) -> 1
     | Lop (Iconst_int n) ->
       num_instructions_for_intconst n
-    | Lop (Iconst_float32 _) ->
-      (* CR mslater: (float32) arm64 *)
-      Misc.fatal_error "float32 is not supported on this architecture"
+    | Lop (Iconst_float32 _) -> 2
     | Lop (Iconst_float _) -> 2
     | Lop (Iconst_symbol _) -> 2
     | Lop (Iconst_vec128 _) ->
@@ -759,7 +757,7 @@ let emit_load_literal dst lbl =
 let move src dst =
   if src.loc <> dst.loc then begin
     match (src, dst) with
-    | {loc = Reg _; typ = Float}, {loc = Reg _} ->
+    | {loc = Reg _; typ = (Float | Float32)}, {loc = Reg _} ->
       `	fmov	{emit_reg dst}, {emit_reg src}\n`
     | {loc = Reg _}, {loc = Reg _} ->
       `	mov	{emit_reg dst}, {emit_reg src}\n`
@@ -770,6 +768,7 @@ let move src dst =
     | _ ->
       assert false
   end
+
 (* Output the assembly code for an instruction *)
 
 let emit_instr i =
@@ -821,9 +820,16 @@ let emit_instr i =
         end
     | Lop(Iconst_int n) ->
         emit_intconst i.res.(0) n
-    | Lop (Iconst_float32 _) ->
-        (* CR mslater: (float32) arm64 *)
-        Misc.fatal_error "float32 is not supported on this architecture"
+    | Lop (Iconst_float32 f) ->
+        let f = Int64.of_int32 f in
+        if f = 0L then
+          `	fmov	{emit_reg i.res.(0)}, xzr\n`
+        else if is_immediate_float f then
+          `	fmov	{emit_reg i.res.(0)}, #{emit_printf "%.7f" (Int64.float_of_bits f)}\n`
+        else begin
+          let lbl = float_literal f in
+          emit_load_literal i.res.(0) lbl
+        end
     | Lop(Iconst_float f) ->
         if f = 0L then
           `	fmov	{emit_reg i.res.(0)}, xzr\n`
@@ -918,12 +924,11 @@ let emit_instr i =
             `	dmb	ishld\n`;
             `	ldar	{emit_reg dst}, [{emit_reg i.arg.(0)}]\n`
           end else
-            `	ldr	{emit_reg dst}, {emit_addressing addressing_mode base}\n`
+            ` ldr	{emit_reg dst}, {emit_addressing addressing_mode base}\n`
         | Double ->
-                      `	ldr	{emit_reg dst}, {emit_addressing addressing_mode base}\n`
+            ` ldr	{emit_reg dst}, {emit_addressing addressing_mode base}\n`
         | Single { reg = Float32 } ->
-            (* CR mslater: (float32) arm64 *)
-            fatal_error "arm64: got float32 memory chunk"
+            ` ldr {emit_reg dst}, {emit_addressing addressing_mode base}\n`
         | Onetwentyeight_aligned | Onetwentyeight_unaligned ->
             (* CR mslater: (SIMD) arm64 *)
             fatal_error "arm64: got 128 bit memory chunk"
@@ -956,11 +961,10 @@ let emit_instr i =
         | Double ->
           `	str	{emit_reg src}, {emit_addressing addr base}\n`
         | Single { reg = Float32 } ->
-            (* CR mslater: (float32) arm64 *)
-            fatal_error "arm64: got float32 memory chunk"
+          ` str {emit_reg src}, {emit_addressing addr base}\n`
         | Onetwentyeight_aligned | Onetwentyeight_unaligned ->
-            (* CR mslater: (SIMD) arm64 *)
-            fatal_error "arm64: got 128 bit memory chunk"
+          (* CR mslater: (SIMD) arm64 *)
+          fatal_error "arm64: got 128 bit memory chunk"
         end
     | Lop(Ialloc { bytes = n; dbginfo; mode = Heap }) ->
         assembly_code_for_allocation i ~n ~local:false ~far:false ~dbginfo
