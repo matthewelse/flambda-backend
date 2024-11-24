@@ -33,11 +33,11 @@ let is_offset chunk n =
        n land 3 = 0 && n lsr 2 < 0x1000
      | Word_int | Word_val | Double -> n land 7 = 0 && n lsr 3 < 0x1000
      | Onetwentyeight_aligned | Onetwentyeight_unaligned ->
-       (* CR mslater: (SIMD) arm64 *)
-       Misc.fatal_error "arm64: got 128 bit memory chunk"
+       (* CR melse: idk *)
+       true
      | Single { reg = Float32 } ->
-       (* CR mslater: (float32) arm64 *)
-       Misc.fatal_error "arm64: got float32 memory chunk"
+       (* CR melse: idk *)
+       true
 
 let is_logical_immediate_int n = Arch.is_logical_immediate (Nativeint.of_int n)
 
