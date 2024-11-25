@@ -20,6 +20,27 @@ open! Stdlib
 
 include module type of Float32_u_common
 
+module With_weird_nan_behavior : sig
+  val min : t -> t -> t
+  val max : t -> t -> t
+end
+
+
+val iround_current : t -> int64#
+(** Rounds a [float32#] to an [int64#] using the "round half to even" mode. If
+    the argument is NaN or infinite or if the rounded value cannot be
+    represented, then the result is unspecified.
+
+    The arm64 flambda-backend compiler translates this call to fcvtns. *)
+
+val round_current : t -> t
+(** Rounds a [float32#] to an [int64#] using the current rounding mode. The default
+    rounding mode on amd64 is "round half to even", and we expect that no
+    program will change the mode. The default mode may differ on other platforms.
+    If the argument is NaN or infinite or if the rounded value cannot be
+    represented, then the result is unspecified.
+    The arm64 flambda-backend compiler translates this call to frintx. *)
+
 val round_down : t -> t
 (** Rounds a [float32#] down to the next integer [float32#] toward negative infinity.
     The arm64 flambda-backend compiler translates this call to frintm.*)
