@@ -355,6 +355,18 @@ CAMLprim value caml_sse41_float32_round_bytecode(value mode, value f) {
   return caml_copy_float32(caml_sse41_float32_round(Int_val(mode), Float32_val(f)));
 }
 
+CAMLprim value caml_neon_float32_round_neg_inf_bytecode(value f) {
+  return caml_copy_float32(caml_sse41_float32_round(ROUND_NEG_INF, Float32_val(f)));
+}
+
+CAMLprim value caml_neon_float32_round_pos_inf_bytecode(value f) {
+  return caml_copy_float32(caml_sse41_float32_round(ROUND_POS_INF, Float32_val(f)));
+}
+
+CAMLprim value caml_neon_float32_round_towards_zero_bytecode(value f) {
+  return caml_copy_float32(caml_sse41_float32_round(ROUND_ZERO, Float32_val(f)));
+}
+
 enum { FP_normal, FP_subnormal, FP_zero, FP_infinite, FP_nan };
 
 value caml_classify_float32(float vf)

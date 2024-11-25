@@ -786,9 +786,9 @@ let emit_instr i =
            dM without referring to single-precision registers? *)
         ` fmov {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
     | Lop (Ireinterpret_cast (Float32_of_int32)) ->
-        ` scvtf {emit_reg i.res.(0)}, {emit_wreg i.arg.(0)}\n`
+        ` fmov {emit_reg i.res.(0)}, {emit_wreg i.arg.(0)}\n`
     | Lop (Ireinterpret_cast Int32_of_float32) ->
-        ` fcvtzs {emit_wreg i.res.(0)}, {emit_reg i.arg.(0)}\n`
+        ` fmov {emit_wreg i.res.(0)}, {emit_reg i.arg.(0)}\n`
     | Lop (Istatic_cast Float_of_int Float32) ->
         ` scvtf {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
     | Lop (Istatic_cast Int_of_float Float32) ->
@@ -821,7 +821,7 @@ let emit_instr i =
     | Lop (Iconst_float32 f) ->
         let f = Int64.of_int32 f in
         if f = 0L then
-          `	fmov	{emit_reg i.res.(0)}, xzr\n`
+          `	fmov	{emit_reg i.res.(0)}, wzr\n`
         else if is_immediate_float f then
           `	fmov	{emit_reg i.res.(0)}, #{emit_printf "%.7f" (Int64.float_of_bits f)}\n`
         else begin
@@ -1020,8 +1020,8 @@ let emit_instr i =
         `	{emit_string instr}	{emit_reg i.res.(0)}, {emit_reg i.arg.(0)}, #{emit_int n}\n`
     | Lop(Ifloatop ((Float32 | Float64), (Iabsf | Inegf)) | Ispecific Isqrtf as op) ->
         let instr = (match op with
-                     | Ifloatop (Float64, Iabsf) -> "fabs"
-                     | Ifloatop (Float64, Inegf) -> "fneg"
+                     | Ifloatop (_, Iabsf) -> "fabs"
+                     | Ifloatop (_, Inegf) -> "fneg"
                      | Ispecific Isqrtf          -> "fsqrt"
                      | _                         -> assert false) in
         `	{emit_string instr}	{emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`

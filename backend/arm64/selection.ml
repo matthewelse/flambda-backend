@@ -148,7 +148,7 @@ class selector =
           Ispecific Inegmulsubf, arg :: args
         | _ -> super#select_operation op args dbg)
       (* Recognize floating-point square root *)
-      | Cextcall { func = "sqrt" } -> Ispecific Isqrtf, args
+      | Cextcall { func = ("sqrt" | "sqrtf") } -> Ispecific Isqrtf, args
       (* Recognize bswap instructions *)
       | Cbswap { bitwidth } ->
         let bitwidth = select_bitwidth bitwidth in
