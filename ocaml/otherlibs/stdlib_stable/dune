@@ -25,6 +25,9 @@
    -strict-formats
    -extension-universe
    stable))
+ (foreign_stubs
+  (language c)
+  (names stubs))
  (ocamlopt_flags
   (:include %{project_root}/ocamlopt_flags.sexp))
  (library_flags
@@ -55,14 +58,16 @@
   float32_u.ml
   float32_u.mli
   stdlib_stable.ml
-  stdlib_stable.mli)
+  stdlib_stable.mli
+  stubs.c)
  (deps
   amd64/float32.ml
   amd64/float32.mli
   amd64/float32_u.ml
   amd64/float32_u.mli
   amd64/stdlib_stable.ml
-  amd64/stdlib_stable.mli)
+  amd64/stdlib_stable.mli
+  amd64/stubs.c)
  (enabled_if
   (= %{architecture} "amd64"))
  (action
@@ -72,7 +77,8 @@
    (copy amd64/float32_u.ml float32_u.ml)
    (copy amd64/float32_u.mli float32_u.mli)
    (copy amd64/stdlib_stable.ml stdlib_stable.ml)
-   (copy amd64/stdlib_stable.mli stdlib_stable.mli))))
+   (copy amd64/stdlib_stable.mli stdlib_stable.mli)
+   (copy amd64/stubs.c stubs.c))))
 
 (rule
  (targets
@@ -81,14 +87,16 @@
   float32_u.ml
   float32_u.mli
   stdlib_stable.ml
-  stdlib_stable.mli)
+  stdlib_stable.mli
+  stubs.c)
  (deps
   arm64/float32.ml
   arm64/float32.mli
   arm64/float32_u.ml
   arm64/float32_u.mli
   arm64/stdlib_stable.ml
-  arm64/stdlib_stable.mli)
+  arm64/stdlib_stable.mli
+  arm64/stubs.c)
  (enabled_if
   (= %{architecture} "arm64"))
  (action
@@ -98,7 +106,8 @@
    (copy arm64/float32_u.ml float32_u.ml)
    (copy arm64/float32_u.mli float32_u.mli)
    (copy arm64/stdlib_stable.ml stdlib_stable.ml)
-   (copy arm64/stdlib_stable.mli stdlib_stable.mli))))
+   (copy arm64/stdlib_stable.mli stdlib_stable.mli)
+   (copy arm64/stubs.c stubs.c))))
 
 (rule
  (targets stdlib_stable.ml stdlib_stable.mli)

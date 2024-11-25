@@ -19,13 +19,13 @@
 include Float32_common
 
 external round_down : (t[@unboxed]) -> (t[@unboxed])
-  = "caml_neon_float32_round_neg_inf_bytecode" "caml_neon_float32_round_neg_inf" 
+  = "caml_neon_unreachable" "caml_neon_float32_round_neg_inf" 
 [@@noalloc] [@@builtin]
 
 external round_up : (t[@unboxed]) -> (t[@unboxed])
-  = "caml_neon_float32_round_pos_inf_bytecode" "caml_neon_float32_round_pos_inf" 
+  = "caml_neon_unreachable" "caml_neon_float32_round_pos_inf" 
 [@@noalloc] [@@builtin]
 
 external round_towards_zero : (t[@unboxed]) -> (t[@unboxed])
-  = "caml_neon_float32_round_towards_zero_bytecode" "caml_neon_float32_round_towards_zero" 
+  = "caml_neon_unreachable" "caml_neon_float32_round_towards_zero" 
 [@@noalloc] [@@builtin]
