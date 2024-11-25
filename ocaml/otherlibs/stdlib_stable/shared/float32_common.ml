@@ -277,24 +277,6 @@ let[@inline] min_max_num (x : t) (y : t) =
   else if y > x || ((not (sign_bit y)) && sign_bit x) then (x, y)
   else (y, x)
 
-(* external iround_current : t -> int64
-  = "caml_sse_cast_float32_int64_bytecode" "caml_sse_cast_float32_int64"
-  [@@noalloc] [@@unboxed] [@@builtin]
-
-external round_intrinsic : (int[@untagged]) -> (t[@unboxed]) -> (t[@unboxed])
-  = "caml_sse41_float32_round_bytecode" "caml_sse41_float32_round"
-  [@@noalloc] [@@builtin] *)
-
-(* On amd64, these constants also imply _MM_FROUND_NO_EXC (suppress exceptions). *)
-(* let round_neg_inf = 0x9
-let round_pos_inf = 0xA
-let round_zero = 0xB
-let round_current_mode = 0xC
-let[@inline] round_current x = round_intrinsic round_current_mode x
-let[@inline] round_down x = round_intrinsic round_neg_inf x
-let[@inline] round_up x = round_intrinsic round_pos_inf x
-let[@inline] round_towards_zero x = round_intrinsic round_zero x *)
-
 external seeded_hash_param : int -> int -> int -> 'a -> int = "caml_hash_exn"
   [@@noalloc]
 
