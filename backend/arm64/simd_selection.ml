@@ -26,6 +26,9 @@ let select_operation op args =
   | "caml_neon_int32x4_add" -> Some (Add Int32x4, args)
   | "caml_neon_int32x2_add" -> Some (Add Int32x2, args)
   | "caml_neon_int64x2_add" -> Some (Add Int64x2, args)
+  | "caml_neon_float32_round_neg_inf" -> Some (Round_f32 Neg_inf, args)
+  | "caml_neon_float32_round_pos_inf" -> Some (Round_f32 Pos_inf, args)
+  | "caml_neon_float32_round_towards_zero" -> Some (Round_f32 Zero, args)
   | _ -> None
 
 let pseudoregs_for_operation _ arg res = arg, res
