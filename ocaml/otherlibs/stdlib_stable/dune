@@ -75,10 +75,38 @@
    (copy amd64/stdlib_stable.mli stdlib_stable.mli))))
 
 (rule
+ (targets
+  float32.ml
+  float32.mli
+  float32_u.ml
+  float32_u.mli
+  stdlib_stable.ml
+  stdlib_stable.mli)
+ (deps
+  arm64/float32.ml
+  arm64/float32.mli
+  arm64/float32_u.ml
+  arm64/float32_u.mli
+  arm64/stdlib_stable.ml
+  arm64/stdlib_stable.mli)
+ (enabled_if
+  (= %{architecture} "arm64"))
+ (action
+  (progn
+   (copy arm64/float32.ml float32.ml)
+   (copy arm64/float32.mli float32.mli)
+   (copy arm64/float32_u.ml float32_u.ml)
+   (copy arm64/float32_u.mli float32_u.mli)
+   (copy arm64/stdlib_stable.ml stdlib_stable.ml)
+   (copy arm64/stdlib_stable.mli stdlib_stable.mli))))
+
+(rule
  (targets stdlib_stable.ml stdlib_stable.mli)
  (deps generic/stdlib_stable.ml generic/stdlib_stable.mli)
  (enabled_if
-  (<> %{architecture} "amd64"))
+  (and
+   (<> %{architecture} "amd64")
+   (<> %{architecture} "arm64")))
  (action
   (progn
    (copy generic/stdlib_stable.ml stdlib_stable.ml)
