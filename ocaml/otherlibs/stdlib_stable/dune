@@ -32,6 +32,24 @@
 
 (rule
  (targets
+  float32_common.ml
+  float32_common.mli
+  float32_u_common.ml
+  float32_u_common.mli)
+ (deps
+  shared/float32_common.ml
+  shared/float32_common.mli
+  shared/float32_u_common.ml
+  shared/float32_u_common.mli)
+ (action
+  (progn
+   (copy shared/float32_common.ml float32_common.ml)
+   (copy shared/float32_common.mli float32_common.mli)
+   (copy shared/float32_u_common.ml float32_u_common.ml)
+   (copy shared/float32_u_common.mli float32_u_common.mli))))
+
+(rule
+ (targets
   float32.ml
   float32.mli
   float32_u.ml
