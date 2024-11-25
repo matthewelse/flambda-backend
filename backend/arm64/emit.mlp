@@ -580,7 +580,7 @@ module BR = Branch_relaxation.Make (struct
     | Lop (Ispecific (Ibswap { bitwidth = (Thirtytwo | Sixtyfour) })) -> 1
     | Lop (Ispecific Imove32) -> 1
     | Lop (Ispecific (Isignext _)) -> 1
-    | Lop (Ispecific (Isimd (Add _ | Round_f32 _))) -> 1
+    | Lop (Ispecific (Isimd (Add _ | Round_f32 _ | Round_f32_i64))) -> 1
     | Lop (Iname_for_debugger _) -> 0
     | Lop (Iprobe _ | Iprobe_is_enabled _) ->
       fatal_error ("Probes not supported.")
@@ -779,6 +779,8 @@ let emit_simd_instr (op : Simd.operation) i =
     `  add {emit_vreg i.res.(0) int_dt}, {emit_vreg i.arg.(0) int_dt}, {emit_vreg i.arg.(1) int_dt}\n`
   | Round_f32 rounding_mode ->
     `  frint{emit_string (Simd.rounding_mode_instruction_suffix rounding_mode)} {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
+  | Round_f32_i64 -> 
+    `  fcvtns {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
 
 (* Output the assembly code for an instruction *)
 
