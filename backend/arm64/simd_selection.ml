@@ -19,13 +19,6 @@ open Format
 
 let select_operation op args =
   match op with
-  | "caml_neon_int8x16_add" -> Some (Add Int8x16, args)
-  | "caml_neon_int8x8_add" -> Some (Add Int8x8, args)
-  | "caml_neon_int16x8_add" -> Some (Add Int16x8, args)
-  | "caml_neon_int16x4_add" -> Some (Add Int16x4, args)
-  | "caml_neon_int32x4_add" -> Some (Add Int32x4, args)
-  | "caml_neon_int32x2_add" -> Some (Add Int32x2, args)
-  | "caml_neon_int64x2_add" -> Some (Add Int64x2, args)
   | "caml_neon_float32_round_neg_inf" -> Some (Round_f32 Neg_inf, args)
   | "caml_neon_float32_round_pos_inf" -> Some (Round_f32 Pos_inf, args)
   | "caml_neon_float32_round_towards_zero" -> Some (Round_f32 Zero, args)

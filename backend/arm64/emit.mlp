@@ -567,6 +567,7 @@ module BR = Branch_relaxation.Make (struct
     | Lop (Ispecific (Ibswap { bitwidth = (Thirtytwo | Sixtyfour) })) -> 1
     | Lop (Ispecific Imove32) -> 1
     | Lop (Ispecific (Isignext _)) -> 1
+    | Lop (Ispecific (Isimd (Round_f32 _ | Round_f32_i64))) -> 1
     | Lop (Iname_for_debugger _) -> 0
     | Lop (Iprobe _ | Iprobe_is_enabled _) ->
       fatal_error ("Probes not supported.")
@@ -620,6 +621,13 @@ let name_for_float_comparison = function
   | CFngt -> "le"
   | CFge -> "ge"
   | CFnge -> "lt"
+
+let emit_simd_instr (op : Simd.operation) i =
+  match op with
+  | Round_f32 rounding_mode ->
+    `  frint{emit_string (Simd.rounding_mode_instruction_suffix rounding_mode)} {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
+  | Round_f32_i64 -> 
+    `  fcvtns {emit_reg i.res.(0)}, {emit_reg i.arg.(0)}\n`
 
 (* Output the assembly code for allocation. *)
 
@@ -1083,6 +1091,8 @@ let emit_instr i =
         end
     | Lop(Ispecific(Isignext size)) ->
         `	sbfm	{emit_reg i.res.(0)}, {emit_reg i.arg.(0)}, #0, #{emit_int (size - 1)}\n`
+    | Lop(Ispecific(Isimd simd)) ->
+      emit_simd_instr simd i
     | Lop (Iname_for_debugger _) -> ()
     | Lop (Iprobe _ | Iprobe_is_enabled _) ->
       fatal_error ("Probes not supported.")
