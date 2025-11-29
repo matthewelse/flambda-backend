@@ -1706,11 +1706,10 @@ let unboxed_immutable_float_array_ref arr ofs dbg =
 
 let unboxed_mutable_float32_unboxed_product_array_ref arr ~array_index dbg =
   bind "arr" arr (fun arr ->
-      bind "index" array_index (fun index ->
-          Cop
-            ( mk_load_mut (Single { reg = Float32 }),
-              [array_indexing log2_size_addr arr index dbg],
-              dbg )))
+      Cop
+        ( mk_load_mut (Single { reg = Float32 }),
+          [array_indexing log2_size_addr arr array_index dbg],
+          dbg ))
 
 (* CR mshinwell/mslater: if we're writing zeros to the top 32 bits of float32
    product fields, should we do the same for mixed block record fields? *)
@@ -1718,18 +1717,17 @@ let unboxed_mutable_float32_unboxed_product_array_ref arr ~array_index dbg =
 let unboxed_mutable_float32_unboxed_product_array_set arr ~array_index
     ~new_value dbg =
   bind "arr" arr (fun arr ->
-      bind "index" array_index (fun index ->
-          bind "new_value" new_value (fun new_value ->
-              Csequence
-                ( Cop
-                    ( Cstore (Word_int, Assignment),
-                      [ array_indexing log2_size_addr arr index dbg;
-                        Cconst_int (0, dbg) ],
-                      dbg ),
-                  Cop
-                    ( Cstore (Single { reg = Float32 }, Assignment),
-                      [array_indexing log2_size_addr arr index dbg; new_value],
-                      dbg ) ))))
+      bind "new_value" new_value (fun new_value ->
+          Csequence
+            ( Cop
+                ( Cstore (Word_int, Assignment),
+                  [ array_indexing log2_size_addr arr array_index dbg;
+                    Cconst_int (0, dbg) ],
+                  dbg ),
+              Cop
+                ( Cstore (Single { reg = Float32 }, Assignment),
+                  [array_indexing log2_size_addr arr array_index dbg; new_value],
+                  dbg ) )))
 
 let unboxed_float_array_ref (mutability : Asttypes.mutable_flag) ~block:arr
     ~index:ofs dbg =
@@ -1889,11 +1887,10 @@ let unboxed_or_untagged_packed_array_ref arr index dbg ~log2_size_addr
   (* N.B. The resulting value will be sign extended by the code generated for a
      [memory_chunk] load if it is an integer. *)
   bind "arr" arr (fun arr ->
-      bind "index" index (fun index ->
-          Cop
-            ( mk_load_mut memory_chunk,
-              [array_indexing log2_size_addr arr index dbg],
-              dbg )))
+      Cop
+        ( mk_load_mut memory_chunk,
+          [array_indexing log2_size_addr arr index dbg],
+          dbg ))
 
 let untagged_int8_array_ref =
   unboxed_or_untagged_packed_array_ref ~log2_size_addr:0
@@ -1931,13 +1928,12 @@ let unboxed_mutable_int32_unboxed_product_array_ref arr ~array_index dbg =
 let unboxed_or_untagged_mutable_unboxed_product_array_set ~bits arr ~array_index
     ~new_value dbg =
   bind "arr" arr (fun arr ->
-      bind "index" array_index (fun index ->
-          bind "new_value" new_value (fun new_value ->
-              let new_value = sign_extend ~bits new_value ~dbg in
-              Cop
-                ( Cstore (Word_int, Assignment),
-                  [array_indexing log2_size_addr arr index dbg; new_value],
-                  dbg ))))
+      bind "new_value" new_value (fun new_value ->
+          let new_value = sign_extend ~bits new_value ~dbg in
+          Cop
+            ( Cstore (Word_int, Assignment),
+              [array_indexing log2_size_addr arr array_index dbg; new_value],
+              dbg )))
 
 let untagged_mutable_int8_unboxed_product_array_set arr ~array_index ~new_value
     dbg =
@@ -1960,18 +1956,16 @@ let unboxed_float32_array_ref =
 
 let unboxed_or_untagged_int_or_int64_or_nativeint_array_ref arr ~array_index dbg
     =
-  bind "arr" arr (fun arr ->
-      bind "index" array_index (fun index -> int_array_ref arr index dbg))
+  int_array_ref arr array_index dbg
 
 let unboxed_or_untagged_packed_array_set arr ~index ~new_value dbg
     ~log2_size_addr ~memory_chunk =
   bind "arr" arr (fun arr ->
-      bind "index" index (fun index ->
-          bind "new_value" new_value (fun new_value ->
-              Cop
-                ( Cstore (memory_chunk, Assignment),
-                  [array_indexing log2_size_addr arr index dbg; new_value],
-                  dbg ))))
+      bind "new_value" new_value (fun new_value ->
+          Cop
+            ( Cstore (memory_chunk, Assignment),
+              [array_indexing log2_size_addr arr index dbg; new_value],
+              dbg )))
 
 let untagged_int8_array_set =
   unboxed_or_untagged_packed_array_set ~log2_size_addr:0
@@ -1991,10 +1985,7 @@ let unboxed_float32_array_set =
 
 let unboxed_or_untagged_int_or_int64_or_nativeint_array_set arr ~index
     ~new_value dbg =
-  bind "arr" arr (fun arr ->
-      bind "index" index (fun index ->
-          bind "new_value" new_value (fun new_value ->
-              int_array_set arr index new_value dbg)))
+  int_array_set arr index new_value dbg
 
 let get_field_unboxed ~dbg memory_chunk mutability block ~index_in_words =
   if Arch.big_endian && memory_chunk_width_in_bytes memory_chunk <> size_addr
