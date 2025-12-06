@@ -297,6 +297,7 @@ BUILTIN(caml_neon_int8x16_maxv);
 BUILTIN(caml_neon_int8x16_minv);
 BUILTIN(caml_neon_int8x16_maxv_unsigned);
 BUILTIN(caml_neon_int8x16_minv_unsigned);
+BUILTIN(caml_neon_int8x16_shrn);
 BUILTIN(caml_neon_int16x8_maxv);
 BUILTIN(caml_neon_int16x8_minv);
 BUILTIN(caml_neon_int16x8_maxv_unsigned);

@@ -1005,6 +1005,10 @@ module Int8x16 = struct
     = "caml_vec128_unreachable" "caml_neon_int8x16_sshl"
     [@@noalloc] [@@unboxed] [@@builtin]
 
+  external shrn : (int[@untagged]) -> (int16x8[@unboxed]) -> (t[@unboxed])
+    = "caml_vec128_unreachable" "caml_neon_int8x16_shrn"
+    [@@noalloc] [@@builtin]
+
   external dup : t -> t = "caml_vec128_unreachable" "caml_neon_int8x16_dup"
     [@@noalloc] [@@unboxed] [@@builtin]
 
