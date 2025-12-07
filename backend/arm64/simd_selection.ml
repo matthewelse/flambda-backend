@@ -45,6 +45,19 @@ let one_arg name args =
   | _ ->
     Misc.fatal_errorf "Cmm_builtins: expected exactly 1 argument for %s" name
 
+let simd_load memory_chunk args =
+  Some
+    ( Operation.Load
+        { memory_chunk;
+          addressing_mode = Iindexed 0;
+          mutability = Mutable;
+          is_atomic = false
+        },
+      args )
+
+let simd_store memory_chunk args =
+  Some (Operation.Store (memory_chunk, Iindexed 0, true), args)
+
 (* Intrinsics naming conventions:
 
    "caml_simd_*" for intrinsics used in the compiler distribution libraries, for
@@ -431,8 +444,18 @@ let select_simd_instr op args dbg =
   | _ -> None
 
 let select_operation_cfg op args dbg =
-  select_simd_instr op args dbg
-  |> Option.map (fun (op, args) -> Operation.Specific (Isimd op), args)
+  match op with
+  | "caml_neon_load_aligned" | "caml_simd_load_aligned" ->
+    simd_load Onetwentyeight_aligned args
+  | "caml_neon_load_unaligned" | "caml_simd_load_unaligned" ->
+    simd_load Onetwentyeight_unaligned args
+  | "caml_neon_store_aligned" | "caml_simd_store_aligned" ->
+    simd_store Onetwentyeight_aligned (List.rev args)
+  | "caml_neon_store_unaligned" | "caml_simd_store_unaligned" ->
+    simd_store Onetwentyeight_unaligned (List.rev args)
+  | _ ->
+    select_simd_instr op args dbg
+    |> Option.map (fun (op, args) -> Operation.Specific (Isimd op), args)
 
 let pseudoregs_for_operation (simd_op : Simd.operation) arg res =
   match Simd_proc.register_behavior simd_op with
