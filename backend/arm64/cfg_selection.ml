@@ -102,7 +102,8 @@ let select_addressing' (chunk : Cmm.memory_chunk) (expr : Cmm.expression) :
   | Cop ((Caddv | Cadda), [Cconst_symbol (s, _); Cconst_int (n, _)], _)
     when use_direct_addressing s ->
     Ibased (s.sym_name, n), Ctuple []
-  | Cop ((Caddv | Cadda), [arg; Cconst_int (n, _)], _) when is_offset chunk n ->
+  | Cop ((Caddv | Cadda | Caddi), [arg; Cconst_int (n, _)], _)
+    when is_offset chunk n ->
     Iindexed n, arg
   | Cop
       ( ((Caddv | Cadda) as op),

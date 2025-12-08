@@ -1068,6 +1068,18 @@ let transl_builtin name args dbg typ_res =
   | "caml_native_pointer_store_signed_int16" ->
     Some
       (return_unit dbg (Cop (Cstore (Sixteen_signed, Assignment), args, dbg)))
+  | "caml_native_pointer_load_vec128_aligned" ->
+    Some (Cop (mk_load_mut Onetwentyeight_aligned, args, dbg))
+  | "caml_native_pointer_load_vec128_unaligned" ->
+    Some (Cop (mk_load_mut Onetwentyeight_unaligned, args, dbg))
+  | "caml_native_pointer_store_vec128_aligned" ->
+    Some
+      (return_unit dbg
+         (Cop (Cstore (Onetwentyeight_aligned, Assignment), args, dbg)))
+  | "caml_native_pointer_store_vec128_unaligned" ->
+    Some
+      (return_unit dbg
+         (Cop (Cstore (Onetwentyeight_unaligned, Assignment), args, dbg)))
   (* Ext_pointer: handled as tagged int *)
   | "caml_ext_pointer_load_immediate"
   | "caml_ext_pointer_load_unboxed_nativeint" ->
